@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "196719139623",
+    "project_id": "flash-chat-f729b",
+    "storage_bucket": "flash-chat-f729b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:196719139623:android:07d8556e4940e949b9e702",
+        "android_client_info": {
+          "package_name": "majomendieta.com.flash_chat_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3ibgrsfVDwWxWhDbZWpvXdyxgPHM72VI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
