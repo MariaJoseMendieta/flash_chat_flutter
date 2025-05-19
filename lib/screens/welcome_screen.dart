@@ -7,7 +7,7 @@ import 'package:flash_chat_flutter/components/rounded_button.dart';
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
-  static String id = 'welcome_screen';
+  static String id = 'welcome_screen'; //Identificador para navegación
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -15,21 +15,28 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController controller;
-  late Animation animation;
+  late AnimationController controller; //Controlador de animación
+  late Animation animation; //Objeto para definir la animación
 
   @override
   void initState() {
     super.initState();
+
+    //Inicializa el controlador con duración de 1 segundo y el ticker del widget
     controller = AnimationController(
       vsync: this,
       duration: Duration(seconds: 1),
     );
+
+    //Define una animación de color que va de gris azulado a blanco
     animation = ColorTween(
       begin: Colors.blueGrey,
       end: Colors.white,
     ).animate(controller);
-    controller.forward();
+
+    controller.forward(); //Inicia la animación hacia adelante
+
+    //Escucha los cambios en la animación y llama a setState para refrescar UI
     controller.addListener(() {
       setState(() {});
     });
@@ -38,6 +45,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //El color de fondo cambia según la animación de color
       backgroundColor: animation.value,
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -47,6 +55,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           children: [
             Row(
               children: [
+                //Logo con animación Hero para transición suave entre pantallas
                 Hero(
                   tag: 'logo',
                   child: Container(
@@ -54,6 +63,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     height: 60.0,
                   ),
                 ),
+                //Texto animado con efecto máquina de escribir
                 AnimatedTextKit(
                   animatedTexts: [
                     TypewriterAnimatedText(
@@ -73,6 +83,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               ],
             ),
             SizedBox(height: 48.0),
+            //Botón para navegar a la pantalla de login
             RoundedButton(
               colour: Colors.lightBlueAccent,
               title: 'Log In',
@@ -80,6 +91,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 Navigator.pushNamed(context, LoginScreen.id);
               },
             ),
+            //Botón para navegar a la pantalla de registro
             RoundedButton(
               colour: Colors.blueAccent,
               title: 'Register',

@@ -3,12 +3,15 @@ import 'package:flash_chat_flutter/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+//Instancia global de Firestore para acceder a la base de datos
 final _firestore = FirebaseFirestore.instance;
+//Usuario que ha iniciado sesión actualmente
 User? loggedInUser;
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
 
+  //Identificador estático para facilitar la navegación
   static String id = 'chat_screen';
 
   @override
@@ -16,22 +19,26 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  //Controlador para manejar el contenido del TextField donde se escribe el mensaje
   final messageTextController = TextEditingController();
+  //Instancia del servicio de autenticación de Firebase
   final _auth = FirebaseAuth.instance;
+  //Variable para guardar temporalmente el texto del mensaje que escribe el usuario
   String? messageText;
 
   @override
   void initState() {
     super.initState();
+    //Obtener el usuario que ha iniciado sesión al cargar la pantalla
     getCurrentUser();
   }
 
+  //Metodo para obtener el usuario actual desde Firebase Auth
   void getCurrentUser() async {
     try {
       final user = await _auth.currentUser;
       if (user != null) {
         loggedInUser = user;
-        // print(loggedInUser!.email,); //! asegura que loggedInUser no es nulo en ese momento
       }
     } catch (e) {
       print(e);
@@ -47,7 +54,9 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
             icon: Icon(Icons.close),
             onPressed: () {
+              //Cierra sesión cuando se presiona el botón de cerrar
               _auth.signOut();
+              //Regresa a la pantalla anterior (login)
               Navigator.pop(context);
             },
           ),
@@ -60,7 +69,7 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            MessagesStream(),
+            MessagesStream(), //Widget que muestra el listado de mensajes
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -68,8 +77,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: <Widget>[
                   Expanded(
                     child: TextField(
-                      controller: messageTextController,
+                      controller:
+                          messageTextController, //Controla el texto escrito
                       onChanged: (value) {
+                        //Guardar el texto en la variable cuando cambia
                         messageText = value;
                       },
                       decoration: kMessageTextFieldDecoration,
@@ -77,16 +88,20 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
+                      //Solo enviar si hay texto no vacío
                       if (messageText != null &&
                           messageText!.trim().isNotEmpty) {
+                        //Añadir el mensaje a la colección 'messages' en Firestore
                         _firestore.collection('messages').add({
-                          'text': messageText!.trim(),
-                          'sender': loggedInUser!.email,
-                          'timestamp': FieldValue.serverTimestamp(),
+                          'text': messageText!.trim(), //Mensaje escrito
+                          'sender': loggedInUser!.email, //Email del remitente
+                          'timestamp':
+                              FieldValue.serverTimestamp(), //Marca de tiempo automática del servidor
                         });
                       }
+                      //Limpiar el campo de texto después de enviar
                       messageTextController.clear();
-                      messageText = null; //Limpiar el texto
+                      messageText = null; //Resetear variable temporal
                     },
                     child: Text('Send', style: kSendButtonTextStyle),
                   ),
@@ -100,20 +115,21 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
+//Widget para mostrar la lista de mensajes en tiempo real
 class MessagesStream extends StatelessWidget {
   const MessagesStream({super.key});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      //Flujo de datos en tiempo real
+      //Escucha la colección 'messages' ordenada por 'timestamp' para actualizaciones en tiempo real
       stream:
           _firestore
               .collection('messages')
               .orderBy('timestamp', descending: false)
               .snapshots(),
       builder: (context, snapshot) {
-        //hasData devuelve un valor booleano que indica si esta instantánea tiene datos o no
+        //Mostrar indicador de carga mientras no hay datos
         if (!snapshot.hasData) {
           return Center(
             child: CircularProgressIndicator(
@@ -121,14 +137,22 @@ class MessagesStream extends StatelessWidget {
             ),
           );
         }
-        final messages = snapshot.data!.docs.reversed; //Accede a los documentos
+
+        //Acceder a los documentos recibidos de Firestore
+        final messages =
+            snapshot
+                .data!
+                .docs
+                .reversed; //Invertir para mostrar mensajes recientes abajo
         List<MessageBubble> messageBubbles = [];
         for (var message in messages) {
-          final messageText = message['text'];
-          final messageSender = message['sender'];
+          final messageText = message['text']; //Texto del mensaje
+          final messageSender = message['sender']; //Email del remitente
 
-          final currentUser = loggedInUser!.email;
+          final currentUser =
+              loggedInUser!.email; //Usuario actual para comparar
 
+          //Crear burbuja de mensaje personalizada
           final messageBubble = MessageBubble(
             sender: messageSender,
             text: messageText,
@@ -138,6 +162,8 @@ class MessagesStream extends StatelessWidget {
           );
           messageBubbles.add(messageBubble);
         }
+
+        //Mostrar la lista de mensajes dentro de una ListView invertida para que los mensajes más recientes estén abajo
         return Expanded(
           child: ListView(
             reverse: true,
@@ -150,6 +176,7 @@ class MessagesStream extends StatelessWidget {
   }
 }
 
+//Widget para mostrar cada mensaje individual con estilo diferenciado
 class MessageBubble extends StatelessWidget {
   const MessageBubble({
     super.key,
@@ -158,20 +185,23 @@ class MessageBubble extends StatelessWidget {
     required this.isMe,
   });
 
-  final String sender;
-  final String text;
-  final bool isMe;
+  final String sender; //Email del remitente
+  final String text; //Contenido del mensaje
+  final bool isMe; //Indica si el mensaje es del usuario actual
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(10.0),
       child: Column(
+        //Alinea el mensaje a la derecha si es del usuario o a la izquierda si es de otro
         crossAxisAlignment:
             isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
+          //Mostrar el email del remitente encima del mensaje
           Text(sender, style: TextStyle(fontSize: 12.0, color: Colors.black54)),
           Material(
+            //Burbuja con bordes redondeados y color diferente según remitente
             borderRadius:
                 isMe
                     ? BorderRadius.only(
