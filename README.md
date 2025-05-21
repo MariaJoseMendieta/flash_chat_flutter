@@ -11,8 +11,8 @@
 ## 👁 Vista App
 <p align="center">
   <img src="welcome.png" width="200"/>
-  <img src="login.png" width="200"/>
-  <img src="chat.png" width="200"/>
+  <img src="login.png" width="202"/>
+  <img src="chat.png" width="199"/>
 </p>
 
 ---
