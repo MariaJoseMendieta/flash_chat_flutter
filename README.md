@@ -8,6 +8,15 @@
 
 ---
 
+## 👁 Vista App
+<p align="center">
+  <img src="welcome.png" width="200"/>
+  <img src="login.png" width="200"/>
+  <img src="chat.png" width="200"/>
+</p>
+
+---
+
 ## 🚀 Funcionalidades principales
 
 - 🔐 Registro de nuevos usuarios con correo electrónico y contraseña.
